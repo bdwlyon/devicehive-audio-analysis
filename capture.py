@@ -19,8 +19,10 @@ import time
 import os
 import numpy as np
 from scipy.io import wavfile
+import tempfile
 from log_config import LOGGING
 
+import aiy.audio  # noqa
 from audio.captor import Captor
 from audio.processor import WavProcessor, format_predictions
 
@@ -47,6 +49,8 @@ class Capture(object):
     _process_buf = None
     _sample_rate = 16000
 
+    _RECORD_DURATION_SECONDS = 3
+
     def __init__(self, min_time, max_time, path=None):
         if path is not None:
             if not os.path.exists(path):
@@ -59,8 +63,28 @@ class Capture(object):
         self._captor = Captor(min_time, max_time, self._ask_data, self._process)
 
     def start(self):
-        self._captor.start()
-        self._process_loop()
+        # self._captor.start()
+        # self._process_loop()
+        self._voicehat_caputure()
+
+    def _voicehat_capture(self):
+        temp_file, temp_path = tempfile.mkstemp(suffix='.wav')
+        os.close(temp_file)
+
+        try:
+            aiy.audio.record_to_wave(temp_path, self._RECORD_DURATION_SECONDS)
+            sr, data = wavfile.read(temp_path)
+
+            with WavProcessor() as proc:
+                predictions = proc.get_predictions(sr, data)
+                logger.info(
+                    'Predictions: {}'.format(format_predictions(predictions))
+                )
+        finally:
+            try:
+                os.unlink(temp_path)
+            except FileNotFoundError:
+                pass
 
     def _process(self, data):
         self._process_buf = np.frombuffer(data, dtype=np.int16)
