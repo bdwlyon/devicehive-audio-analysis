@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import argparse
+import boto3
+import json
 import logging.config
 import threading
 import time
@@ -48,6 +50,7 @@ class Capture(object):
     _processor_sleep_time = 0.01
     _process_buf = None
     _sample_rate = 16000
+    _kinesis_client = None
 
     _RECORD_DURATION_SECONDS = 3
 
@@ -61,6 +64,7 @@ class Capture(object):
         self._save_path = path
         self._ask_data = threading.Event()
         self._captor = Captor(min_time, max_time, self._ask_data, self._process)
+        self._kinesis_client = boto3.client('kinesis')
 
     def start(self):
         # self._captor.start()
@@ -112,6 +116,11 @@ class Capture(object):
                 logger.info(
                     'Predictions: {}'.format(format_predictions(predictions))
                 )
+
+                prediction_data = {'sensor': 1, 'timestamp': time.time()*1000, 'type':format_predictions(predictions)}
+
+                logger.info('Publishing to kinesis...')
+                self._kinesis_client.put_record(StreamName='SafeSense_injest_from_raspi', Data=json.dumps(prediction_data))
 
                 logger.info('Stop processing.')
                 self._process_buf = None
