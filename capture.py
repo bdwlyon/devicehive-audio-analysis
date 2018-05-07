@@ -67,28 +67,8 @@ class Capture(object):
         self._kinesis_client = boto3.client('kinesis')
 
     def start(self):
-        # self._captor.start()
-        # self._process_loop()
-        self._voicehat_caputure()
-
-    def _voicehat_capture(self):
-        temp_file, temp_path = tempfile.mkstemp(suffix='.wav')
-        os.close(temp_file)
-
-        try:
-            aiy.audio.record_to_wave(temp_path, self._RECORD_DURATION_SECONDS)
-            sr, data = wavfile.read(temp_path)
-
-            with WavProcessor() as proc:
-                predictions = proc.get_predictions(sr, data)
-                logger.info(
-                    'Predictions: {}'.format(format_predictions(predictions))
-                )
-        finally:
-            try:
-                os.unlink(temp_path)
-            except FileNotFoundError:
-                pass
+        self._captor.start()
+        self._process_loop()
 
     def _process(self, data):
         self._process_buf = np.frombuffer(data, dtype=np.int16)
