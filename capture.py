@@ -97,14 +97,15 @@ class Capture(object):
                     'Predictions: {}'.format(format_predictions(predictions))
                 )
 
-                prediction_data = {'sensor': 1, 'timestamp': time.time()*1000, 'type':format_predictions(predictions)}
+                if predictions.length > 1:
+                    prediction_data = {'sensor': '1', 'timestamp': int(time.time()*1000), 'type': predictions}
 
-                logger.info('Publishing to kinesis...')
-                self._kinesis_client.put_record(
-                    StreamName='SafeSense_injest_from_raspi',
-                    Data=json.dumps(prediction_data),
-                    PartitionKey='key'
-                )
+                    logger.info('Publishing to kinesis...')
+                    self._kinesis_client.put_record(
+                        StreamName='SafeSense_injest_from_raspi',
+                        Data=json.dumps(prediction_data),
+                        PartitionKey='key'
+                    )
 
                 logger.info('Stop processing.')
                 self._process_buf = None
