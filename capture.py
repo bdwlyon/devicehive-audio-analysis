@@ -97,7 +97,7 @@ class Capture(object):
                     'Predictions: {}'.format(format_predictions(predictions))
                 )
 
-                if len(predictions) > 1:
+                if len(predictions) > 0:
                     prediction_data = {'sensor': '1', 'timestamp': int(time.time()*1000), 'type': predictions}
 
                     logger.info('Publishing to kinesis...')
