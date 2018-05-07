@@ -21,10 +21,8 @@ import time
 import os
 import numpy as np
 from scipy.io import wavfile
-import tempfile
 from log_config import LOGGING
 
-import aiy.audio  # noqa
 from audio.captor import Captor
 from audio.processor import WavProcessor, format_predictions
 
