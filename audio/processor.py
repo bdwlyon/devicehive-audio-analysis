@@ -80,7 +80,8 @@ class WavProcessor(object):
             next(f)  # skip header
             reader = csv.reader(f)
             for row in reader:
-                self._class_map[int(row[0])] = row[2]
+                # self._class_map[int(row[0])] = row[2]
+                self._class_map[int(row[0])] = row[3]  # the labels csv for Dan's model has an extra column
 
     def get_predictions(self, sample_rate, data):
         samples = data / 32768.0  # Convert to [-1.0, +1.0]
@@ -95,8 +96,10 @@ class WavProcessor(object):
         hit = params.PREDICTIONS_HIT_LIMIT
 
         top_indices = np.argpartition(predictions[0], -count)[-count:]
+
         line = ((self._class_map[i], float(predictions[0][i])) for
                 i in top_indices if predictions[0][i] > hit)
+
         return sorted(line, key=lambda p: -p[1])
 
     def _process_features(self, features):
