@@ -99,4 +99,5 @@ class Captor(object):
             overflow = len(capture_buf) - self._max_data
             if overflow > 0:
                 logger.info('Buffer overflow, truncate {}b.'.format(overflow))
-                capture_buf = capture_buf[overflow:]
+                # capture_buf = capture_buf[overflow:]
+                capture_buf = bytes()  # try clearing the buffer instead
